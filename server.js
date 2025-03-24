@@ -3,6 +3,8 @@ const app = express();
 const sequelize = require('./config/database');
 const itemService = require('./services/itemService');
 
+module.exports = app;
+
 // Middleware for parsing JSON bodies
 app.use(express.json());
 
@@ -105,5 +107,7 @@ async function startServer(initialPort) {
     process.exit(1);
 }
 
-const PORT = process.env.PORT || 3001;
-startServer(PORT);
+if (require.main === module) {
+    const PORT = process.env.PORT || 3001;
+    startServer(PORT);
+}
