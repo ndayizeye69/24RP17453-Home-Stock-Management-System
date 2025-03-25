@@ -22,7 +22,7 @@ const validateItem = (req, res, next) => {
     }
 
     // Validate optional fields
-    if (category && (typeof category !== 'string' || category.trim().length === 0)) {
+    if (category !== undefined && (typeof category !== 'string' || category.trim().length === 0)) {
         return res.status(400).json({
             message: 'Category must be a non-empty string'
         });
