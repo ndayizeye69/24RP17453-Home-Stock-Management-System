@@ -4,7 +4,9 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --detectOpenHandles --forceExit",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "migrate": "node scripts/runMigrations.js",
+    "seed": "node scripts/seedData.js"
   },
   "keywords": [],
   "author": "",

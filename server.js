@@ -2,11 +2,16 @@ const express = require('express');
 const app = express();
 const sequelize = require('./config/database');
 const itemService = require('./services/itemService');
+const { validateItem } = require('./middleware/validation');
+const errorHandler = require('./middleware/errorHandler');
 
 module.exports = app;
 
 // Middleware for parsing JSON bodies
 app.use(express.json());
+
+// Error handling middleware
+app.use(errorHandler);
 
 // Initialize database
 sequelize.sync().then(() => {
@@ -16,28 +21,28 @@ sequelize.sync().then(() => {
 });
 
 // GET all items
-app.get('/api/items', async (req, res) => {
+app.get('/api/items', async (req, res, next) => {
     try {
         const items = await itemService.getAllItems();
         res.json(items);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching items', error: error.message });
+        next(error);
     }
 });
 
 // GET single item by ID
-app.get('/api/items/:id', async (req, res) => {
+app.get('/api/items/:id', async (req, res, next) => {
     try {
         const item = await itemService.getItemById(parseInt(req.params.id));
         if (!item) return res.status(404).json({ message: 'Item not found' });
         res.json(item);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching item', error: error.message });
+        next(error);
     }
 });
 
 // POST new item
-app.post('/api/items', async (req, res) => {
+app.post('/api/items', validateItem, async (req, res, next) => {
     try {
         if (!req.body.name || !req.body.quantity) {
             return res.status(400).json({ message: 'Name and quantity are required' });
@@ -46,29 +51,29 @@ app.post('/api/items', async (req, res) => {
         const item = await itemService.createItem(req.body);
         res.status(201).json(item);
     } catch (error) {
-        res.status(500).json({ message: 'Error creating item', error: error.message });
+        next(error);
     }
 });
 
 // PUT update item
-app.put('/api/items/:id', async (req, res) => {
+app.put('/api/items/:id', validateItem, async (req, res, next) => {
     try {
         const updatedItem = await itemService.updateItem(parseInt(req.params.id), req.body);
         if (!updatedItem) return res.status(404).json({ message: 'Item not found' });
         res.json(updatedItem);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating item', error: error.message });
+        next(error);
     }
 });
 
 // DELETE item
-app.delete('/api/items/:id', async (req, res) => {
+app.delete('/api/items/:id', async (req, res, next) => {
     try {
         const success = await itemService.deleteItem(parseInt(req.params.id));
         if (!success) return res.status(404).json({ message: 'Item not found' });
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting item', error: error.message });
+        next(error);
     }
 });
 
